@@ -34,10 +34,9 @@ function writeToDatabase($file){
             for ($c=0; $c < $total; $c++) {
                 $csvdata = implode(";", $getdata);
                 $fncsvdata = explode(";", $csvdata);
-
                 $checkUser = checkUsers($fncsvdata[2],$fncsvdata[3],$fncsvdata[4]);
                 if ($checkUser === 1) {
-                    continue;
+                    echo 'bu kayıttan zaten var';
                 }else{
                     $data = [
                         'name' => $fncsvdata[0],
@@ -50,8 +49,8 @@ function writeToDatabase($file){
                     $sql = "INSERT INTO users (name, surname, email,employee_id,phone,point) 
                     VALUES (:name, :surname, :email, :employee_id, :phone, :point)";
                     $user= $db->prepare($sql);
-                    $user->execute($data);
-                }
+                    $result = $user->execute($data);
+                };
             }
         }
     }                
@@ -59,13 +58,11 @@ function writeToDatabase($file){
 
 function checkUsers($email, $employee_id, $phone){
     $db = new DB;
-    $sth = $db->prepare("SELECT * FROM users where email='$email' or employee_id='$employee_id' or phone='$phone'");
+    $sth = $db->prepare("SELECT * FROM users where email='$email' OR employee_id='$employee_id' OR phone='$phone'");
     $sth->execute();
     $array = $sth->fetchAll(PDO::FETCH_ASSOC);
-    if (!empty($kitapadi)) {
-        return 1;
-    }else{
-        return 0;
-    }
+    if (!empty($array)) return 1;
+    return 0;
+
 }
 ?>  
