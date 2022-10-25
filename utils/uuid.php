@@ -2,7 +2,8 @@
 
 class Uuid{
     function generateRandomString() {
-        $length = 100;
+        $length = 15
+        ;
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $charactersLength = strlen($characters);
         $randomString = '';

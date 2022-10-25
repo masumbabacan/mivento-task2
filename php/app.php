@@ -1,68 +1,99 @@
 <?php
-include '../db/DB.php';
-include '../utils/uuid.php';
+include '../db/Db.php';
+include '../utils/fileUpload.php';
 
-$target_dir = "../uploads/";
-$target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
-$fileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-$allowedTypes = ['csv'];
+$fileUpload = new FileUpload();
+$fileUpload = $fileUpload->upload();
+if ($fileUpload != 0) {
+    $response = writeToDatabase($fileUpload);
+    echo json_encode($response);
+}else{
+    $response = array();
+    $response["type"] = "error";
+    $response["message"] = "Gönderdiğiniz dosya '.csv' formatında olmalıdır!";
+    echo json_encode($response);
+};
 
-if (isset($_POST)) {
-    $Uuid = new Uuid;
-    //dosyanın ismini benzersiz olması için değiştiriyorum
-    $changeFileName = explode('.',explode('/',$target_file)[2])[0].'-'.$Uuid->generateRandomString().'.'.explode('.',explode('/',$target_file)[2])[1];
-    $target_file = '../uploads/'.''.$changeFileName;
-    if (!in_array($fileType, $allowedTypes)) {
-        $response["type"] = "error";
-        $response["message"] = "Gönderdiğiniz dosya '.csv' formatında olmalıdır!";
-        echo json_encode($response);
-    }elseif (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
-        writeToDatabase($target_file);
-    }
-}
 
 //Bu fonksiyon dosyanın adını alacak ve bulursa eğer dosyayı veritabanına yazmaya çalışacak.
 function writeToDatabase($file){
-    $db = new DB;
-    $row = 1;
+    $db = new Db;
     $count = 0;
+    $response = array();
     if (($openfile = fopen($file, "r")) !== FALSE) {
         while ($getdata = fgetcsv($openfile, 1000, ",")) {
             if ($count === 0) { $count++; continue; };
-            $total = count($getdata);
-            $row++;
-            for ($c=0; $c < $total; $c++) {
-                $csvdata = implode(";", $getdata);
-                $fncsvdata = explode(";", $csvdata);
-                $checkUser = checkUsers($fncsvdata[2],$fncsvdata[3],$fncsvdata[4]);
-                if ($checkUser === 1) {
-                    echo 'bu kayıttan zaten var';
+            $csvdata = implode(";", $getdata);
+            $fncsvdata = explode(";", $csvdata);
+            $data = [
+                'name' => $fncsvdata[0],
+                'surname' => $fncsvdata[1],
+                'email' => $fncsvdata[2],
+                'employee_id' => $fncsvdata[3],
+                'phone' => $fncsvdata[4],
+                'point' => $fncsvdata[5],
+            ];
+            //email kontrol noktası
+            if(!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+                array_push($response, [
+                    "data" => $data,
+                    "message" => "Bu kaydın email adresinde hata var. Kaydı düzeltip tekrar yükleyin",
+                    "status" => "warning"
+                ]);
+            }
+            //telefon numarası formatlama
+            $data['phone'] = preg_replace('/[^0-9]/','',$data['phone']);
+            //telefon numarası kontrol noktası
+            if (strlen($data['phone']) > 12) {
+                array_push($response, [
+                    "data" => $data,
+                    "message" => "Bu kaydın telefon numarasında hata var. Kaydı düzeltip tekrar yükleyin",
+                    "status" => "warning"
+                ]);
+            }
+            if (strlen($data['phone']) < 10) {
+                array_push($response, [
+                    "data" => $data,
+                    "message" => "Bu kaydın telefon numarasında hata var. Kaydı düzeltip tekrar yükleyin",
+                    "status" => "warning"
+                ]);
+            }
+            if (strlen($data['phone']) == 12) {
+                $data['phone'] = substr($data['phone'], 2);
+            }
+            if (strlen($data['phone']) == 11) {
+                $data['phone'] = substr($data['phone'], 1);
+            }
+            $checkUser = $db->getData($data['email'],$data['employee_id'],$data['phone']);
+            if (!empty($checkUser)) {
+                array_push($response, [
+                    "data" => $data,
+                    "message" => "Bu kayıt veri tabanında tekrar ediyor. Kaydı düzeltip tekrar yükleyin",
+                    "status" => "warning"
+                ]);
+            }else{
+                $result = $db->insertData($data);
+                if (!$result) {
+                    array_push($response, [
+                        "data" => $data,
+                        "message" => "Bu kayıt veritabanına eklenirken hata oluştu. Lütfen tekrar deneyin",
+                        "status" => "warning"
+                    ]);
                 }else{
-                    $data = [
-                        'name' => $fncsvdata[0],
-                        'surname' => $fncsvdata[1],
-                        'email' => $fncsvdata[2],
-                        'employee_id' => $fncsvdata[3],
-                        'phone' => $fncsvdata[4],
-                        'point' => $fncsvdata[5],
-                    ];
-                    $sql = "INSERT INTO users (name, surname, email,employee_id,phone,point) 
-                    VALUES (:name, :surname, :email, :employee_id, :phone, :point)";
-                    $user= $db->prepare($sql);
-                    $result = $user->execute($data);
-                };
+                    array_push($response, [
+                        "data" => $data,
+                        "message" => "Kayıt başarıyla eklendi",
+                        "status" => "success"
+                    ]);
+                }
             }
         }
-    }                
+    }
+    return $response;
 }
 
-function checkUsers($email, $employee_id, $phone){
-    $db = new DB;
-    $sth = $db->prepare("SELECT * FROM users where email='$email' OR employee_id='$employee_id' OR phone='$phone'");
-    $sth->execute();
-    $array = $sth->fetchAll(PDO::FETCH_ASSOC);
-    if (!empty($array)) return 1;
-    return 0;
-
-}
+// function phoneFormat($phoneNumber){
+//     $phoneNumber = preg_replace('/[^0-9]/','',$phoneNumber);
+//     return $phoneNumber;
+// }
 ?>  

@@ -20,41 +20,68 @@
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-md-5">
-          <form class="needs-validation" id="form" enctype="multipart/form-data">
-            <div class="mb-3">
-              <label for="campaign-file" class="form-label">Dosya Yükleyin</label>
-              <input class="form-control fileinput" type="file" name="fileToUpload" id="campaign-file" required />
+          <div class="row justify-content-center">
+            <div class="col-md-12">
+              <form class="needs-validation" id="form" enctype="multipart/form-data">
+                <div class="mb-3">
+                  <label for="campaign-file" class="form-label">Dosya Yükleyin</label>
+                  <input class="form-control fileinput" type="file" name="fileToUpload" id="campaign-file" required />
+                </div>
+                <div class="d-grid">
+                  <button class="btn btn-primary btn-block d-flex justify-content-center align-items-center" type="submit">
+                    <span>.csv Uzantılı dosyayı yükleyin</span> 
+                  </button>
+                </div>
+              </form>
             </div>
-            <div class="d-grid">
-              <button class="btn btn-primary btn-block d-flex justify-content-center align-items-center" type="submit">
-                <span>.csv Uzantılı dosyayı yükleyin</span> 
-              </button>
+            <div class="col-md-12">
+              <div class="alert-message mt-2">
+              </div>
             </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.min.js" integrity="sha384-IDwe1+LCz02ROU9k972gdyvl+AESN10+x7tBKgc9I5HFtuNz0wWnPclzo6p9vxnk" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script>
        $("#form").on("submit",function (e) {
         e.preventDefault();
+        $('.alert-message .alert').remove();
         var formData = new FormData(this);
         $.ajax({
             url : "./php/app.php",
             type : "post",
             data: formData,
             success:(response) => {
-              console.log(response);
-                // response = JSON.parse(response);
-                // console.log(response);
-                // if (response.type === 'success') {
-                //   toastr.success(response.message);
-                // }else{
-                //   toastr.error(response.message);
-                // }
+              response = JSON.parse(response);
+              if (response.type === 'error') {
+                $('.alert-message').append(`
+                  <div class="alert alert-warning" role="alert">
+                    <h4 class="alert-heading text-danger">Hata</h4>
+                    <p>${response.message}</p>
+                  </div>
+                `);
+              }else{
+                counter = 1;
+                response.forEach(element => {
+                  $('.alert-message').append(`
+                    <div class="alert alert-${element.status}" role="alert">
+                      <h4 class="alert-heading text-danger">${element.status} #Sıra numarası : ${counter}</h4>
+                      <p>${element.message}</p>
+                      <hr>
+                      <p class="m-0">name : ${element.data.name}</p>
+                      <p class="m-0">surname : ${element.data.surname}</p>
+                      <p class="m-0">email : ${element.data.email}</p>
+                      <p class="m-0">emplyee_id : ${element.data.employee_id}</p>
+                      <p class="m-0">phone : ${element.data.phone}</p>
+                      <p class="m-0">point : ${element.data.point}</p>
+                    </div>
+                  `);
+                  counter++;
+                });
+              }
             },
             cache: false,
             contentType: false,
