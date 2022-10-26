@@ -14,7 +14,7 @@ class WriteDatabase extends Db{
                 $data = [
                     'name' => $fncsvdata[0],
                     'surname' => $fncsvdata[1],
-                    'email' => $fncsvdata[2],
+                    'email' => strtolower($fncsvdata[2]),
                     'employee_id' => $fncsvdata[3],
                     'phone' => $fncsvdata[4],
                     'point' => $fncsvdata[5],

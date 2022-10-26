@@ -25,7 +25,7 @@
         public function insertData($data = array()){
             $sql = "INSERT INTO users (name, surname, email,employee_id,phone,point) 
             VALUES (:name, :surname, :email, :employee_id, :phone, :point)";
-            $user= $this->db->prepare($sql);
+            $user = $this->db->prepare($sql);
             $result = $user->execute($data);
             return $result;
         }
