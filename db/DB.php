@@ -1,10 +1,10 @@
 <?php
     class Db {
         public $db;
-        private $servername = "localhost";
-        private $username = "root";
-        private $password = "";
-        private $dbname = "mivento-task";
+        private $servername = "eu-cdbr-west-03.cleardb.net";
+        private $username = "b5807d538dbe6e";
+        private $password = "7a87a63b";
+        private $dbname = "heroku_ae75fceab9cfe8b";
         private $charset = "utf8mb4";
 
         public function __construct() {
