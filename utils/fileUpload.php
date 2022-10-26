@@ -1,15 +1,14 @@
 <?php 
 include 'uuid.php';
 
-class FileUpload{
+class FileUpload extends Uuid{
     public function upload(){
         $target_dir = "../uploads/";
         $target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
         $fileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
         $allowedTypes = ['csv'];
-        $Uuid = new Uuid;
         if (isset($_POST)) {
-            $changeFileName = explode('.',explode('/',$target_file)[2])[0].'-'.$Uuid->generateRandomString().'.'.explode('.',explode('/',$target_file)[2])[1];
+            $changeFileName = explode('.',explode('/',$target_file)[2])[0].'-'.parent::generateRandomString().'.'.explode('.',explode('/',$target_file)[2])[1];
             $target_file = '../uploads/'.''.$changeFileName;
             if (!in_array($fileType, $allowedTypes)) {
                 return 0;

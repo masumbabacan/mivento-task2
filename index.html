@@ -68,7 +68,7 @@
                 response.forEach(element => {
                   $('.alert-message').append(`
                     <div class="alert alert-${element.status}" role="alert">
-                      <h4 class="alert-heading text-danger">${element.status} #Sıra numarası : ${counter}</h4>
+                      <h4 class="alert-heading text-danger">${element.status} #${counter}</h4>
                       <p>${element.message}</p>
                       <hr>
                       <p class="m-0">name : ${element.data.name}</p>
