@@ -26,6 +26,7 @@ class WriteDatabase extends Db{
                         "message" => "Bu kaydın email adresinde hata var. Kaydı düzeltip tekrar yükleyin",
                         "status" => "warning"
                     ]);
+                    continue;
                 }
                 //telefon numarası formatlama
                 $data['phone'] = preg_replace('/[^0-9]/','',$data['phone']);
@@ -36,6 +37,7 @@ class WriteDatabase extends Db{
                         "message" => "Bu kaydın telefon numarasında hata var. Kaydı düzeltip tekrar yükleyin",
                         "status" => "warning"
                     ]);
+                    continue;
                 }
                 if (strlen($data['phone']) < 10) {
                     array_push($this->response, [
@@ -43,6 +45,7 @@ class WriteDatabase extends Db{
                         "message" => "Bu kaydın telefon numarasında hata var. Kaydı düzeltip tekrar yükleyin",
                         "status" => "warning"
                     ]);
+                    continue;
                 }
                 if (strlen($data['phone']) == 12) {
                     $data['phone'] = substr($data['phone'], 2);
@@ -57,6 +60,7 @@ class WriteDatabase extends Db{
                         "message" => "Bu kayıt veri tabanında tekrar ediyor. Kaydı düzeltip tekrar yükleyin",
                         "status" => "warning"
                     ]);
+                    continue;
                 }else{
                     $result = parent::insertData($data);
                     if (!$result) {
@@ -65,12 +69,14 @@ class WriteDatabase extends Db{
                             "message" => "Bu kayıt veritabanına eklenirken hata oluştu. Lütfen tekrar deneyin",
                             "status" => "warning"
                         ]);
+                        continue;
                     }else{
                         array_push($this->response, [
                             "data" => $data,
                             "message" => "Kayıt başarıyla eklendi",
                             "status" => "success"
                         ]);
+                        continue;
                     }
                 }
             }
