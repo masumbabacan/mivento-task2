@@ -19,5 +19,5 @@
 - gerekli kontroller yapıldıktan sonra şartlar sağlanıyorsa veri tabanına ekler ve success mesajı ile birlikte datayı döner.
 - şartlar sağlanmıyorsa error mesajı ile birlikte ilgili datayı döner.
 
-## utils/app.php
+## php/app.php
 - ilgili kısımlar çalıştırılır.
